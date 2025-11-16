@@ -22,6 +22,7 @@ func main() {
 	port := 3000
 
 	// Load the TLS cert and key
+	// openssl req -x509 -newkey rsa:2048 -nodes -keyout key.pem -out cert.pem -days 365
 	cert := "cert.pem"
 	key := "key.pem"
 
