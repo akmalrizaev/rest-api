@@ -8,8 +8,12 @@ import (
 
 func main() {
 
-	http.HandleFunc("/", func(resp http.ResponseWriter, req *http.Request) {
-		fmt.Fprintln(resp, "Hello Server")
+	http.HandleFunc("/orders", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Handling incoming orders ")
+	})
+
+	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintf(w, "Handling users")
 	})
 
 	const port string = ":3000"
