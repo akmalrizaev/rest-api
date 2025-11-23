@@ -70,6 +70,26 @@ func main() {
 			fmt.Println("JSON Unmarshaling:", userInstance)
 			fmt.Println("Received user name as:", userInstance.Name)
 
+			// Access the request details
+			fmt.Println("Access the request details:")
+			fmt.Println("Body:", r.Body)
+			fmt.Println("Form", r.Form)
+			fmt.Println("Header", r.Header)
+			fmt.Println("Context", r.Context())
+			fmt.Println("ContentLength", r.ContentLength)
+			fmt.Println("Host", r.Host)
+			fmt.Println("Method", r.Method)
+			fmt.Println("Protocol", r.Proto)
+			fmt.Println("Remote Addr", r.RemoteAddr)
+			fmt.Println("Request URI", r.RequestURI)
+			fmt.Println("TLS", r.TLS)
+			fmt.Println("Trailers", r.Trailer)
+			fmt.Println("Transfer Encoding", r.TransferEncoding)
+			fmt.Println("URL", r.URL)
+			fmt.Println("User Agent", r.UserAgent())
+			fmt.Println("Port", r.URL.Port())
+			fmt.Println("URL", r.URL.Scheme)
+
 			w.Write([]byte("Hello POST Method on Teachers Route"))
 			return
 		case http.MethodPut:
