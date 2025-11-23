@@ -1,10 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 )
+
+type User struct {
+	Name string `json:"name"`
+	Age  string `json:"age"`
+	City string `json:"city"`
+}
 
 func main() {
 
@@ -41,6 +49,26 @@ func main() {
 			}
 
 			fmt.Println("Processed Response Map:", response)
+
+			// RAW Body
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				return
+			}
+			defer r.Body.Close()
+
+			fmt.Println("RAW Body without converting to string:", body)
+			fmt.Println("RAW Body", string(body))
+
+			// if we expect json data, then unmarshal it
+			var userInstance User
+			err = json.Unmarshal(body, &userInstance)
+			if err != nil {
+				return
+			}
+
+			fmt.Println("JSON Unmarshaling:", userInstance)
+			fmt.Println("Received user name as:", userInstance.Name)
 
 			w.Write([]byte("Hello POST Method on Teachers Route"))
 			return
