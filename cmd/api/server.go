@@ -23,12 +23,20 @@ func teachersHandler(w http.ResponseWriter, r *http.Request) {
 	// teachers/{id}
 	// teachers/9
 
+	// Query Params
+	// teachers/?key=value&query=value2
+
 	switch r.Method {
 	case http.MethodGet:
 		fmt.Println(r.URL.Path)
 		path := strings.TrimPrefix(r.URL.Path, "/teachers/")
 		userID := strings.TrimSuffix(path, "/")
 		fmt.Println("The ID is:", userID)
+
+		fmt.Println("Query Params", r.URL.Query())
+		queryParams := r.URL.Query()
+		key := queryParams.Get("key")
+		fmt.Printf("Key: %v", key)
 
 		w.Write([]byte("Hello GET Method on Teachers Route"))
 
