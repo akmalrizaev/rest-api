@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 )
 
 type User struct {
@@ -28,19 +27,25 @@ func teachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch r.Method {
 	case http.MethodGet:
-		fmt.Println(r.URL.Path)
-		path := strings.TrimPrefix(r.URL.Path, "/teachers/")
-		userID := strings.TrimSuffix(path, "/")
-		fmt.Println("The ID is:", userID)
 
-		fmt.Println("Query Params", r.URL.Query())
-		queryParams := r.URL.Query()
-		key := queryParams.Get("key")
-		fmt.Printf("Key: %v", key)
+		/*
+			fmt.Println(r.URL.Path)
+			path := strings.TrimPrefix(r.URL.Path, "/teachers/")
+			userID := strings.TrimSuffix(path, "/")
+			fmt.Println("The ID is:", userID)
+
+			fmt.Println("Query Params", r.URL.Query())
+			queryParams := r.URL.Query()
+			key := queryParams.Get("key")
+			fmt.Printf("Key: %v", key)
+
+		*/
 
 		w.Write([]byte("Hello GET Method on Teachers Route"))
 
 	case http.MethodPost:
+
+		w.Write([]byte("Hello POST Method on Teachers Route"))
 
 		/*
 
@@ -174,16 +179,18 @@ func main() {
 
 	port := ":3000"
 
-	http.HandleFunc("/", rootHandler)
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/teachers/", teachersHandler)
+	mux.HandleFunc("/", rootHandler)
 
-	http.HandleFunc("/students/", studentsHandler)
+	mux.HandleFunc("/teachers/", teachersHandler)
 
-	http.HandleFunc("/execs/", execsHandler)
+	mux.HandleFunc("/students/", studentsHandler)
+
+	mux.HandleFunc("/execs/", execsHandler)
 
 	fmt.Println("Server is running on port", port)
-	err := http.ListenAndServe(port, nil)
+	err := http.ListenAndServe(port, mux)
 	if err != nil {
 		log.Fatal("Error starting the server", err)
 	}
