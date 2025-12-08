@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"simpleapi/internal/api/middlewares"
 )
 
 type User struct {
@@ -190,7 +191,7 @@ func main() {
 	mux.HandleFunc("/execs/", execsHandler)
 
 	fmt.Println("Server is running on port", port)
-	err := http.ListenAndServe(port, mux)
+	err := http.ListenAndServe(port, middlewares.SecurityHeaders(mux))
 	if err != nil {
 		log.Fatal("Error starting the server", err)
 	}
