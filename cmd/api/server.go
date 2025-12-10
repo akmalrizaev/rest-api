@@ -191,7 +191,7 @@ func main() {
 	mux.HandleFunc("/execs/", execsHandler)
 
 	fmt.Println("Server is running on port", port)
-	err := http.ListenAndServe(port, middlewares.ResponseTimeMiddleware(middlewares.Cors(middlewares.SecurityHeaders(mux))))
+	err := http.ListenAndServe(port, middlewares.Compression(middlewares.ResponseTimeMiddleware(middlewares.Cors(middlewares.SecurityHeaders(mux)))))
 	if err != nil {
 		log.Fatal("Error starting the server", err)
 	}
