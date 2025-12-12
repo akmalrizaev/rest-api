@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"simpleapi/internal/api/middlewares"
+	"time"
 )
 
 type User struct {
@@ -190,8 +191,10 @@ func main() {
 
 	mux.HandleFunc("/execs/", execsHandler)
 
+	rl := middlewares.NewRateLimiter(5, time.Minute)
+
 	fmt.Println("Server is running on port", port)
-	err := http.ListenAndServe(port, middlewares.Compression(middlewares.ResponseTimeMiddleware(middlewares.Cors(middlewares.SecurityHeaders(mux)))))
+	err := http.ListenAndServe(port, rl.Middleware(middlewares.Compression(middlewares.ResponseTimeMiddleware(middlewares.Cors(middlewares.SecurityHeaders(mux))))))
 	if err != nil {
 		log.Fatal("Error starting the server", err)
 	}
