@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"simpleapi/internal/api/middlewares"
-	"time"
 )
 
 type User struct {
@@ -191,11 +190,24 @@ func main() {
 
 	mux.HandleFunc("/execs/", execsHandler)
 
-	rl := middlewares.NewRateLimiter(5, time.Minute)
+	// rl := middlewares.NewRateLimiter(5, time.Minute)
 
 	fmt.Println("Server is running on port", port)
-	err := http.ListenAndServe(port, rl.Middleware(middlewares.Compression(middlewares.ResponseTimeMiddleware(middlewares.Cors(middlewares.SecurityHeaders(mux))))))
+	// err := http.ListenAndServe(port, rl.Middleware(middlewares.Compression(middlewares.ResponseTimeMiddleware(middlewares.Cors(middlewares.SecurityHeaders(mux))))))
+	// err := http.ListenAndServe(port, applyMiddlewares(mux, middlewares.SecurityHeaders, middlewares.Cors, middlewares.ResponseTimeMiddleware, middlewares.Compression, rl.Middleware))
+	err := http.ListenAndServe(port, middlewares.SecurityHeaders(mux))
 	if err != nil {
 		log.Fatal("Error starting the server", err)
 	}
+}
+
+// Middleware is a function that wraps an http.Handler with additional functionality
+type Middleware func(http.Handler) http.Handler
+
+func ApplyMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handler {
+	for _, middleware := range middlewares {
+		handler = middleware(handler)
+	}
+	return handler
+
 }
