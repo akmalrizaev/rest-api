@@ -8,6 +8,7 @@ import (
 	"simpleapi/internal/api/middlewares"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 type User struct {
@@ -17,16 +18,16 @@ type User struct {
 }
 
 type Teacher struct {
-	ID        int
-	FirstName string
-	LastName  string
-	Class     string
-	Subject   string
+	ID        int    `json: "id, omitempty"`
+	FirstName string `json: "first_name, omitempty"`
+	LastName  string `json: "last_name, omitempty"`
+	Class     string `json: "class, omitempty"`
+	Subject   string `json: "subject, omitempty"`
 }
 
 var teachers = make(map[int]Teacher)
 
-// var mutex = &sync.Mutex{}
+var mutex = &sync.Mutex{}
 
 var nextID = 1
 
@@ -55,6 +56,7 @@ func init() {
 		Class:     "11A",
 		Subject:   "Biology",
 	}
+	nextID++
 }
 
 func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
@@ -104,6 +106,41 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func addTeacherHandler(w http.ResponseWriter, r *http.Request) {
+	mutex.Lock()
+	defer mutex.Unlock()
+
+	var newTeachers []Teacher
+	err := json.NewDecoder(r.Body).Decode(&newTeachers)
+	if err != nil {
+		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		return
+
+	}
+
+	addedTeachers := make([]Teacher, len(newTeachers))
+	for i, newTeacher := range newTeachers {
+		newTeacher.ID = nextID
+		teachers[nextID] = newTeacher
+		addedTeachers[i] = newTeacher
+		nextID++
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	response := struct {
+		Status string    `json: "status"`
+		Count  int       `json: "count"`
+		Data   []Teacher `json: "data"`
+	}{
+		Status: "success",
+		Count:  len(addedTeachers),
+		Data:   addedTeachers,
+	}
+	json.NewEncoder(w).Encode(response)
+
+}
+
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	// fmt.Fprintf(w, "Hello Root Router")
 	w.Write([]byte("Hello Root Router"))
@@ -138,7 +175,7 @@ func teachersHandler(w http.ResponseWriter, r *http.Request) {
 
 	case http.MethodPost:
 
-		w.Write([]byte("Hello POST Method on Teachers Route"))
+		addTeacherHandler(w, r)
 
 		/*
 
@@ -217,10 +254,10 @@ func teachersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if r.Method == http.MethodGet {
-		w.Write([]byte("Hello GET Method on Teachers Route"))
-		return
-	}
+	// if r.Method == http.MethodGet {
+	// 	w.Write([]byte("Hello GET Method on Teachers Route"))
+	// 	return
+	// }
 	// w.Write([]byte("Hello from Teachers Route"))
 }
 
