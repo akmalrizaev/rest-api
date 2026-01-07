@@ -246,13 +246,21 @@ func addTeacherHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer stmt.Close()
 
-	addedTeacher := make([]models.Teacher, len(newTeachers))
+	addedTeachers := make([]models.Teacher, len(newTeachers))
 	for i, newTeacher := range newTeachers {
 		res, err := stmt.Exec(newTeacher.FirstName, newTeacher.LastName, newTeacher.Email, newTeacher.Class, newTeacher.Subject)
 		if err != nil {
 			http.Error(w, "Error inserting data into database", http.StatusInternalServerError)
 			return
 		}
+		lastID, err := res.LastInsertId()
+		if err != nil {
+			http.Error(w, "Error getting last insert ID", http.StatusInternalServerError)
+			return
+
+		}
+		newTeacher.ID = int(lastID)
+		addedTeachers[i] = newTeacher
 	}
 
 	w.Header().Set("Content-Type", "application/json")
