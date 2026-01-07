@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"simpleapi/internal/models"
+	"simpleapi/internal/repositories/sqlconnect"
 	"strconv"
 	"strings"
 	"sync"
@@ -207,23 +208,51 @@ func getTeachersHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func addTeacherHandler(w http.ResponseWriter, r *http.Request) {
-	mutex.Lock()
-	defer mutex.Unlock()
+
+	db, err := sqlconnect.ConnectDB()
+	if err != nil {
+		http.Error(w, "Error connecting to database", http.StatusInternalServerError)
+		return
+	}
+	defer db.Close()
+
+	// mutex.Lock()
+	// defer mutex.Unlock()
 
 	var newTeachers []models.Teacher
-	err := json.NewDecoder(r.Body).Decode(&newTeachers)
+	err = json.NewDecoder(r.Body).Decode(&newTeachers)
 	if err != nil {
 		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
 		return
 
 	}
 
-	addedTeachers := make([]models.Teacher, len(newTeachers))
+	/*
+		addedTeachers := make([]models.Teacher, len(newTeachers))
+		for i, newTeacher := range newTeachers {
+			newTeacher.ID = nextID
+			teachers[nextID] = newTeacher
+			addedTeachers[i] = newTeacher
+			nextID++
+		}
+
+	*/
+
+	stmt, err := db.Prepare("INSERT INTO teachers (first_name, last_name, email, class, subject) VALUES (?,?,?,?,?)")
+	if err != nil {
+		http.Error(w, "Error in preparing SQL query", http.StatusInternalServerError)
+		return
+
+	}
+	defer stmt.Close()
+
+	addedTeacher := make([]models.Teacher, len(newTeachers))
 	for i, newTeacher := range newTeachers {
-		newTeacher.ID = nextID
-		teachers[nextID] = newTeacher
-		addedTeachers[i] = newTeacher
-		nextID++
+		res, err := stmt.Exec(newTeacher.FirstName, newTeacher.LastName, newTeacher.Email, newTeacher.Class, newTeacher.Subject)
+		if err != nil {
+			http.Error(w, "Error inserting data into database", http.StatusInternalServerError)
+			return
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")
